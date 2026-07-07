@@ -1,0 +1,53 @@
+classDiagram
+    %% PawPal+ class diagram
+    %% Owner + pet info are combined into a single Pet class.
+
+    class Pet {
+        +str owner_name
+        +int available_minutes
+        +dict preferences
+        +str name
+        +str species
+        +int age
+        +str special_needs
+        +list~Task~ tasks
+        +add_task(task) None
+        +edit_task(task_id) None
+        +remove_task(task_id) None
+    }
+
+    class Task {
+        +str name
+        +int duration
+        +str priority
+        +str category
+        +str fixed_time
+        +str recurrence
+        +str status
+        +mark_done() None
+        +is_valid() bool
+    }
+
+    class Scheduler {
+        +list~Task~ tasks
+        +int available_minutes
+        +dict preferences
+        +sort_by_priority() list~Task~
+        +fit_to_budget() list~Task~
+        +resolve_conflicts() None
+        +generate_plan() Plan
+    }
+
+    class Plan {
+        +list~Task~ scheduled_tasks
+        +list~Task~ dropped_tasks
+        +int total_time_used
+        +str reasoning
+        +explain() str
+        +summary() str
+    }
+
+    Pet "1" --> "*" Task : has
+    Scheduler ..> Pet : reads constraints
+    Scheduler "1" --> "*" Task : schedules
+    Scheduler ..> Plan : produces
