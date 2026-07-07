@@ -2,15 +2,20 @@
 
 ## 1. System Design
 
+The 3 core actions that a user should be able to do is enter general information, generate a plan, and view the displayed plan.
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+My UML design consists of 4 classes called pet, task, scheduler, and plan. The Owner class holds user information consisting of what the user inputs. The Pet class holds user information which consists of the owner information, pet information, species, age, and any special needs. The Task class shows us what task needs to be carried out (walk, feedings, etc.) and shows the time duration and priority the task may have. The schedulrer class is the logic engine. It takes the information from Pet and Task to create a plan.
+
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+
 
 ---
 

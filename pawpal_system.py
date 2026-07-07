@@ -1,124 +1,125 @@
 """PawPal+ core system.
 
-Class skeletons generated from diagrams/uml.mmd.
-No logic yet -- just names, attributes, and empty method stubs.
+Core implementation of the four classes:
+  Task      -- a single care activity
+  Pet       -- a pet and its list of tasks
+  Owner     -- manages multiple pets, provides access to all their tasks
+  Scheduler -- retrieves, organizes, and manages tasks across all pets
 """
 
 
 class Task:
-    """A single pet-care item (walk, feeding, meds, grooming, etc.)."""
+    """A single care activity (e.g. 'Morning walk')."""
 
-    def __init__(
-        self,
-        name,
-        duration,
-        priority,
-        category=None,
-        fixed_time=None,
-        recurrence=None,
-        status="scheduled",
-    ):
-        self.name = name
-        self.duration = duration          # minutes
-        self.priority = priority          # e.g. "high" / "medium" / "low"
-        self.category = category
-        self.fixed_time = fixed_time      # locked start time, or None if flexible
-        self.recurrence = recurrence      # e.g. "daily" / "weekly" / None
-        self.status = status              # "scheduled" / "done" / "skipped"
+    def __init__(self, description, time=None, frequency="daily", completed=False):
+        """Create a care activity with a description, optional time, and frequency."""
+        self.description = description   # what the task is
+        self.time = time                # when it should happen, e.g. "08:00" (or None)
+        self.frequency = frequency      # "daily", "weekly", etc.
+        self.completed = completed       # has it been done?
 
-    def mark_done(self):
-        """Mark this task as completed."""
-        pass
+    def mark_complete(self):
+        """Mark the task as completed."""
+        self.completed = True
 
-    def is_valid(self):
-        """Return True if the task's fields are valid (duration > 0, etc.)."""
-        pass
+    def mark_incomplete(self):
+        """Reset the task to not-yet-done."""
+        self.completed = False
+
+    def __repr__(self):
+        """Return a readable one-line view of the task."""
+        box = "x" if self.completed else " "
+        when = f" @ {self.time}" if self.time else ""
+        return f"[{box}] {self.description}{when} ({self.frequency})"
 
 
 class Pet:
-    """Combined owner + pet info, and the pet's list of care tasks."""
+    """A pet and the care tasks that belong to it."""
 
-    def __init__(
-        self,
-        owner_name,
-        available_minutes,
-        name,
-        species=None,
-        age=None,
-        special_needs=None,
-        preferences=None,
-    ):
-        # Owner info
-        self.owner_name = owner_name
-        self.available_minutes = available_minutes
-        self.preferences = preferences if preferences is not None else {}
-        # Pet info
+    def __init__(self, name, species=None, age=None, special_needs=None):
+        """Create a pet with basic details and an empty task list."""
         self.name = name
         self.species = species
         self.age = age
         self.special_needs = special_needs
-        # A Pet holds Task objects
-        self.tasks = []
+        self.tasks = []                 # a list of Task objects
 
     def add_task(self, task):
-        """Add a Task to this pet's task list."""
-        pass
+        """Attach a Task to this pet."""
+        self.tasks.append(task)
 
-    def edit_task(self, task_id):
-        """Edit an existing task."""
-        pass
+    def remove_task(self, task):
+        """Remove a Task from this pet (no-op if it isn't there)."""
+        if task in self.tasks:
+            self.tasks.remove(task)
 
-    def remove_task(self, task_id):
-        """Remove a task from this pet's task list."""
-        pass
+    def get_tasks(self):
+        """Return this pet's list of tasks."""
+        return self.tasks
+
+    def __repr__(self):
+        """Return a readable one-line view of the pet and its task count."""
+        species = f", {self.species}" if self.species else ""
+        return f"{self.name}{species} ({len(self.tasks)} tasks)"
 
 
-class Plan:
-    """The generated daily plan: what was scheduled, what was dropped, and why."""
+class Owner:
+    """The owner: manages multiple pets and provides access to all their tasks."""
 
-    def __init__(
-        self,
-        scheduled_tasks=None,
-        dropped_tasks=None,
-        total_time_used=0,
-        reasoning="",
-    ):
-        self.scheduled_tasks = scheduled_tasks if scheduled_tasks is not None else []
-        self.dropped_tasks = dropped_tasks if dropped_tasks is not None else []
-        self.total_time_used = total_time_used
-        self.reasoning = reasoning
+    def __init__(self, name, preferences=None):
+        """Create an owner with a name, preferences, and an empty pet list."""
+        self.name = name
+        self.preferences = preferences if preferences is not None else {}
+        self.pets = []                  # a list of Pet objects
 
-    def explain(self):
-        """Return a human-readable explanation of why the plan looks this way."""
-        pass
+    def add_pet(self, pet):
+        """Add a Pet under this owner."""
+        self.pets.append(pet)
 
-    def summary(self):
-        """Return a short summary (tasks scheduled, skipped, time used)."""
-        pass
+    def get_all_tasks(self):
+        """Return every task across all of this owner's pets (flattened)."""
+        all_tasks = []
+        for pet in self.pets:
+            all_tasks.extend(pet.get_tasks())
+        return all_tasks
+
+    def get_all_tasks_with_pet(self):
+        """Return (pet, task) pairs so callers know which pet each task belongs to."""
+        return [(pet, task) for pet in self.pets for task in pet.get_tasks()]
+
+    def __repr__(self):
+        """Return a readable one-line view of the owner and pet count."""
+        return f"{self.name} (owns {len(self.pets)} pets)"
 
 
 class Scheduler:
-    """Reads a Pet's constraints and its tasks, then produces a Plan."""
+    """The 'brain': retrieves, organizes, and manages tasks across all pets."""
 
-    def __init__(self, pet):
-        # A Scheduler works from a Pet object
-        self.pet = pet
-        self.tasks = pet.tasks
-        self.available_minutes = pet.available_minutes
-        self.preferences = pet.preferences
+    def __init__(self, owner):
+        """Create a scheduler that reads tasks from the given owner."""
+        self.owner = owner              # the Scheduler works from an Owner
 
-    def sort_by_priority(self):
-        """Return tasks ordered by priority (ties broken by duration/fixed time)."""
-        pass
+    def get_all_tasks(self):
+        """Retrieve every task by delegating to the Owner (single access point)."""
+        return self.owner.get_all_tasks()
 
-    def fit_to_budget(self):
-        """Select tasks that fit within available_minutes."""
-        pass
+    def pending_tasks(self):
+        """Return tasks that haven't been completed yet."""
+        return [task for task in self.get_all_tasks() if not task.completed]
 
-    def resolve_conflicts(self):
-        """Handle overlapping time slots between fixed-time tasks."""
-        pass
+    def completed_tasks(self):
+        """Return tasks that are already done."""
+        return [task for task in self.get_all_tasks() if task.completed]
 
-    def generate_plan(self):
-        """Build and return a Plan from the pet's tasks and constraints."""
-        pass
+    def tasks_by_frequency(self, frequency):
+        """Return tasks matching a given frequency (e.g. 'daily')."""
+        return [task for task in self.get_all_tasks() if task.frequency == frequency]
+
+    def sort_by_time(self):
+        """Return all tasks ordered by their scheduled time (untimed tasks last)."""
+        return sorted(self.get_all_tasks(), key=lambda task: task.time or "99:99")
+
+    def daily_plan(self):
+        """Return today's still-pending tasks, ordered by time."""
+        pending = self.pending_tasks()
+        return sorted(pending, key=lambda task: task.time or "99:99")

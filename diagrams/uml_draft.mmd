@@ -1,53 +1,45 @@
 classDiagram
-    %% PawPal+ class diagram
-    %% Owner + pet info are combined into a single Pet class.
+    %% PawPal+ class diagram (draft) -- matches pawpal_system.py
+
+    class Task {
+        +str description
+        +str time
+        +str frequency
+        +bool completed
+        +mark_complete() None
+        +mark_incomplete() None
+    }
 
     class Pet {
-        +str owner_name
-        +int available_minutes
-        +dict preferences
         +str name
         +str species
         +int age
         +str special_needs
         +list~Task~ tasks
         +add_task(task) None
-        +edit_task(task_id) None
-        +remove_task(task_id) None
+        +remove_task(task) None
+        +get_tasks() list~Task~
     }
 
-    class Task {
+    class Owner {
         +str name
-        +int duration
-        +str priority
-        +str category
-        +str fixed_time
-        +str recurrence
-        +str status
-        +mark_done() None
-        +is_valid() bool
+        +dict preferences
+        +list~Pet~ pets
+        +add_pet(pet) None
+        +get_all_tasks() list~Task~
+        +get_all_tasks_with_pet() list
     }
 
     class Scheduler {
-        +list~Task~ tasks
-        +int available_minutes
-        +dict preferences
-        +sort_by_priority() list~Task~
-        +fit_to_budget() list~Task~
-        +resolve_conflicts() None
-        +generate_plan() Plan
+        +Owner owner
+        +get_all_tasks() list~Task~
+        +pending_tasks() list~Task~
+        +completed_tasks() list~Task~
+        +tasks_by_frequency(frequency) list~Task~
+        +sort_by_time() list~Task~
+        +daily_plan() list~Task~
     }
 
-    class Plan {
-        +list~Task~ scheduled_tasks
-        +list~Task~ dropped_tasks
-        +int total_time_used
-        +str reasoning
-        +explain() str
-        +summary() str
-    }
-
+    Owner "1" --> "*" Pet : owns
     Pet "1" --> "*" Task : has
-    Scheduler ..> Pet : reads constraints
-    Scheduler "1" --> "*" Task : schedules
-    Scheduler ..> Plan : produces
+    Scheduler ..> Owner : retrieves tasks from
