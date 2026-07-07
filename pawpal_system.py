@@ -7,16 +7,26 @@ Core implementation of the four classes:
   Scheduler -- retrieves, organizes, and manages tasks across all pets
 """
 
+from datetime import date, timedelta
+
+# How far ahead the next occurrence lands for each recurring frequency.
+FREQUENCY_STEP = {
+    "daily": timedelta(days=1),
+    "weekly": timedelta(weeks=1),
+}
+
 
 class Task:
     """A single care activity (e.g. 'Morning walk')."""
 
-    def __init__(self, description, time=None, frequency="daily", completed=False):
+    def __init__(self, description, time=None, frequency="daily",
+                 completed=False, due_date=None):
         """Create a care activity with a description, optional time, and frequency."""
         self.description = description   # what the task is
         self.time = time                # when it should happen, e.g. "08:00" (or None)
         self.frequency = frequency      # "daily", "weekly", etc.
         self.completed = completed       # has it been done?
+        self.due_date = due_date        # date it's due (a datetime.date, or None)
 
     def mark_complete(self):
         """Mark the task as completed."""
@@ -26,11 +36,25 @@ class Task:
         """Reset the task to not-yet-done."""
         self.completed = False
 
+    def next_occurrence(self):
+        """Return a fresh, incomplete Task for the next due date, or None if it doesn't recur."""
+        step = FREQUENCY_STEP.get(self.frequency)
+        if step is None:                        # e.g. a one-off task
+            return None
+        base = self.due_date or date.today()    # advance from due date, or today if unset
+        return Task(
+            self.description,
+            time=self.time,
+            frequency=self.frequency,
+            due_date=base + step,
+        )
+
     def __repr__(self):
         """Return a readable one-line view of the task."""
         box = "x" if self.completed else " "
         when = f" @ {self.time}" if self.time else ""
-        return f"[{box}] {self.description}{when} ({self.frequency})"
+        due = f" due {self.due_date}" if self.due_date else ""
+        return f"[{box}] {self.description}{when}{due} ({self.frequency})"
 
 
 class Pet:
@@ -123,3 +147,45 @@ class Scheduler:
         """Return today's still-pending tasks, ordered by time."""
         pending = self.pending_tasks()
         return sorted(pending, key=lambda task: task.time or "99:99")
+
+    def complete_task(self, task):
+        """Mark a task complete; if it recurs, add its next occurrence to the same pet.
+
+        Returns the newly created next-occurrence Task, or None if it doesn't recur.
+        """
+        task.mark_complete()
+        upcoming = task.next_occurrence()
+        if upcoming is not None:
+            for pet in self.owner.pets:
+                if task in pet.tasks:
+                    pet.add_task(upcoming)
+                    break
+        return upcoming
+
+    def detect_conflicts(self):
+        """Return warning strings for tasks that share the same time slot.
+
+        Lightweight: groups all tasks by their time and flags any slot holding
+        more than one task. Returns [] when there are no conflicts (never raises).
+        """
+        by_time = {}
+        for pet, task in self.owner.get_all_tasks_with_pet():
+            if task.time is None:
+                continue                        # untimed tasks can't clash
+            by_time.setdefault(task.time, []).append((pet, task))
+
+        warnings = []
+        for slot, pairs in sorted(by_time.items()):
+            if len(pairs) > 1:
+                who = ", ".join(f"{task.description} ({pet.name})" for pet, task in pairs)
+                warnings.append(f"Conflict at {slot}: {who}")
+        return warnings
+
+    def filter_tasks(self, completed=None, pet_name=None):
+        """Return (pet, task) pairs, optionally filtered by status and/or pet name."""
+        pairs = self.owner.get_all_tasks_with_pet()
+        if completed is not None:
+            pairs = [(pet, task) for pet, task in pairs if task.completed == completed]
+        if pet_name is not None:
+            pairs = [(pet, task) for pet, task in pairs if pet.name == pet_name]
+        return pairs

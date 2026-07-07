@@ -26,10 +26,14 @@ My UML design consists of 4 classes called pet, task, scheduler, and plan. The O
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The constraints that my scheduler considers is time of day, completion status, and frequency. I decided that time matters the most because time is important when it comes to scheduling and frequency. 
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+One tradeoff my scheduler makes is in conflict detection, which only flags tasks that share the same start time. The only tradeoff is that it isn't able to catch 30 minute overlaps for example because there isn't anything showing duration.
 
 ---
 

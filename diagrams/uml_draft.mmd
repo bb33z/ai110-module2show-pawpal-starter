@@ -6,8 +6,10 @@ classDiagram
         +str time
         +str frequency
         +bool completed
+        +date due_date
         +mark_complete() None
         +mark_incomplete() None
+        +next_occurrence() Task
     }
 
     class Pet {
@@ -38,6 +40,9 @@ classDiagram
         +tasks_by_frequency(frequency) list~Task~
         +sort_by_time() list~Task~
         +daily_plan() list~Task~
+        +complete_task(task) Task
+        +detect_conflicts() list~str~
+        +filter_tasks(completed, pet_name) list
     }
 
     Owner "1" --> "*" Pet : owns
