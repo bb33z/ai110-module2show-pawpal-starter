@@ -28,6 +28,15 @@ class Task:
         self.completed = completed       # has it been done?
         self.due_date = due_date        # date it's due (a datetime.date, or None)
 
+    def update(self, description=None, time=None, frequency=None):
+        """Edit the task in place, changing only the fields that are provided."""
+        if description is not None:
+            self.description = description
+        if time is not None:
+            self.time = time
+        if frequency is not None:
+            self.frequency = frequency
+
     def mark_complete(self):
         """Mark the task as completed."""
         self.completed = True
@@ -163,15 +172,16 @@ class Scheduler:
         return upcoming
 
     def detect_conflicts(self):
-        """Return warning strings for tasks that share the same time slot.
+        """Return warning strings for pending tasks that share the same time slot.
 
-        Lightweight: groups all tasks by their time and flags any slot holding
-        more than one task. Returns [] when there are no conflicts (never raises).
+        Lightweight: groups pending tasks by their time and flags any slot holding
+        more than one task. Completed and untimed tasks are ignored (they can't
+        clash). Returns [] when there are no conflicts (never raises).
         """
         by_time = {}
         for pet, task in self.owner.get_all_tasks_with_pet():
-            if task.time is None:
-                continue                        # untimed tasks can't clash
+            if task.time is None or task.completed:
+                continue                        # untimed/finished tasks can't clash
             by_time.setdefault(task.time, []).append((pet, task))
 
         warnings = []

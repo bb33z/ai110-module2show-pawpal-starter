@@ -1,5 +1,5 @@
 classDiagram
-    %% PawPal+ class diagram (draft) -- matches pawpal_system.py
+    %% PawPal+ final class diagram -- matches pawpal_system.py
 
     class Task {
         +str description
@@ -7,6 +7,7 @@ classDiagram
         +str frequency
         +bool completed
         +date due_date
+        +update(description, time, frequency) None
         +mark_complete() None
         +mark_incomplete() None
         +next_occurrence() Task
@@ -45,6 +46,11 @@ classDiagram
         +filter_tasks(completed, pet_name) list
     }
 
+    %% Structure: who owns/holds what
     Owner "1" --> "*" Pet : owns
     Pet "1" --> "*" Task : has
+
+    %% Collaboration: how the Scheduler works and how recurrence spawns tasks
     Scheduler ..> Owner : retrieves tasks from
+    Scheduler ..> Task : creates next occurrence (complete_task)
+    Task ..> Task : next_occurrence() spawns a copy

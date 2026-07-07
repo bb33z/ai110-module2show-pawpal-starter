@@ -23,6 +23,17 @@ def test_task_addition_increases_pet_task_count():
     assert len(pet.tasks) == 1            # one task after adding
 
 
+def test_update_edits_only_provided_fields():
+    """Task.update() should change given fields and leave the rest untouched."""
+    task = Task("Walk", time="08:00", frequency="daily")
+
+    task.update(description="Long walk", time="09:00")
+
+    assert task.description == "Long walk"   # changed
+    assert task.time == "09:00"              # changed
+    assert task.frequency == "daily"         # untouched (not passed)
+
+
 def test_sort_by_time_returns_chronological_order():
     """Tasks added out of order should come back sorted by time."""
     owner = Owner("Betsy")
@@ -74,6 +85,22 @@ def test_detect_conflicts_flags_same_time_tasks():
 
     assert len(conflicts) == 1
     assert "08:00" in conflicts[0]
+
+
+def test_completed_tasks_do_not_conflict():
+    """A completed task should not be flagged as conflicting with a pending one."""
+    owner = Owner("Betsy")
+    pet = Pet("Biscuit")
+    owner.add_pet(pet)
+
+    done = Task("Walk", time="08:00", completed=True)
+    pending = Task("Feeding", time="08:00")           # same slot, but the other is done
+    pet.add_task(done)
+    pet.add_task(pending)
+
+    scheduler = Scheduler(owner)
+
+    assert scheduler.detect_conflicts() == []          # no live clash
 
 
 def test_completing_one_off_task_does_not_recur():

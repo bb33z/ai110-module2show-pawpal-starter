@@ -12,6 +12,15 @@ A busy pet owner needs help staying consistent with pet care. They want an assis
 
 Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
 
+## ✨ Features
+
+- **Multi-pet task tracking** — one `Owner` manages multiple `Pet`s, each with its own list of care tasks.
+- **Sorting by time** — tasks are ordered chronologically by their `"HH:MM"` start time (`Scheduler.sort_by_time()`, `daily_plan()`).
+- **Filtering** — narrow tasks by completion status and/or pet (`Scheduler.filter_tasks()`), plus convenience filters like `pending_tasks()`.
+- **Conflict warnings** — detects when two tasks (for the same or different pets) share a time slot and returns a warning instead of crashing (`Scheduler.detect_conflicts()`).
+- **Daily/weekly recurrence** — completing a recurring task automatically schedules its next occurrence with the due date advanced via `datetime.timedelta` (`Scheduler.complete_task()` + `Task.next_occurrence()`).
+- **Interactive Streamlit UI** — add pets and tasks, mark tasks done, filter, and view today's schedule as a table with conflict warnings.
+
 ## What you will build
 
 Your final app should:
@@ -44,17 +53,20 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Terminal output from running `python main.py`:
+A snippet of `python main.py` output (see the full walkthrough at the end):
 
 ```
-Today's Schedule for Betsy
+Conflict check
+========================================
+  ⚠️  Conflict at 08:00: Morning walk (Biscuit), Breakfast (Mochi)
+
+Sorted by time
 ========================================
   07:30  [ ] Litter change  (Mochi)
   08:00  [ ] Morning walk  (Biscuit)
+  08:00  [ ] Breakfast  (Mochi)
   12:00  [ ] Play session  (Mochi)
-  18:00  [ ] Dinner  (Biscuit)
-========================================
-4 tasks pending
+  18:00  [x] Dinner  (Biscuit)
 ```
 
 ## 🧪 Testing PawPal+
@@ -112,10 +124,10 @@ owner's pets and organizes them. Each feature below names the method that implem
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. Set the **owner name** (e.g. "Betsy").
+2. **Add a pet** — "Biscuit", a dog.
+3. **Add tasks**: Biscuit's "Morning walk" at 08:00 (daily).
+4. Use the **Show pet** or click **Include completed tasks** to see finished ones.
+5. **Mark a Task Done**, complete Biscuit's "Morning walk"
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

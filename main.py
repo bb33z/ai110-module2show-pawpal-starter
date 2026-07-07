@@ -22,15 +22,18 @@ def main():
     owner.add_pet(mochi)
 
     # Add tasks deliberately OUT OF ORDER to prove sorting works.
-    biscuit.add_task(Task("Dinner", time="18:00", frequency="daily"))
+    # Keep references to the two tasks we act on later.
+    dinner = Task("Dinner", time="18:00", frequency="daily")
+    litter = Task("Litter change", time="07:30", frequency="daily")
+    biscuit.add_task(dinner)
     mochi.add_task(Task("Play session", time="12:00", frequency="weekly"))
     biscuit.add_task(Task("Morning walk", time="08:00", frequency="daily"))
-    mochi.add_task(Task("Litter change", time="07:30", frequency="daily"))
+    mochi.add_task(litter)
     # Deliberate clash: Mochi's breakfast is at 08:00, same as Biscuit's walk.
     mochi.add_task(Task("Breakfast", time="08:00", frequency="daily"))
 
     # Mark one task done so completion filtering has something to show.
-    biscuit.tasks[0].mark_complete()  # Dinner
+    dinner.mark_complete()
 
     scheduler = Scheduler(owner)
 
@@ -70,7 +73,6 @@ def main():
     # --- Recurrence: completing a recurring task spawns the next occurrence ---
     print("\nCompleting Mochi's daily 'Litter change'...")
     print("=" * 40)
-    litter = mochi.tasks[-1]  # Litter change (daily), added last
     upcoming = scheduler.complete_task(litter)
     print(f"  next occurrence created: {upcoming!r}")
 
