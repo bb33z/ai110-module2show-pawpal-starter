@@ -23,6 +23,23 @@ def test_task_addition_increases_pet_task_count():
     assert len(pet.tasks) == 1            # one task after adding
 
 
+def test_sort_by_time_returns_chronological_order():
+    """Tasks added out of order should come back sorted by time."""
+    owner = Owner("Betsy")
+    pet = Pet("Biscuit")
+    owner.add_pet(pet)
+
+    # Add deliberately OUT OF ORDER so a passing test proves real sorting.
+    pet.add_task(Task("Dinner", time="18:00"))
+    pet.add_task(Task("Morning walk", time="08:00"))
+    pet.add_task(Task("Lunch", time="12:00"))
+
+    scheduler = Scheduler(owner)
+    times = [task.time for task in scheduler.sort_by_time()]
+
+    assert times == ["08:00", "12:00", "18:00"]   # ascending, regardless of insertion
+
+
 def test_completing_recurring_task_creates_next_occurrence():
     """Completing a daily task should spawn a fresh copy due one day later."""
     owner = Owner("Betsy")

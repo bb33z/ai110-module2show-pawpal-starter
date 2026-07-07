@@ -59,19 +59,42 @@ Today's Schedule for Betsy
 
 ## 🧪 Testing PawPal+
 
+Run the full test suite from the project root:
+
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+**What the tests cover** (`tests/test_pawpal.py`):
+
+- **Task completion** — `mark_complete()` flips a task's status to done.
+- **Task addition** — adding a task to a `Pet` increases its task count.
+- **Sorting correctness** — `Scheduler.sort_by_time()` returns tasks in chronological order even when added out of order.
+- **Recurrence logic** — completing a `"daily"` task creates a new task due the following day, and a one-off task does *not* recur.
+- **Conflict detection** — `Scheduler.detect_conflicts()` flags two tasks scheduled at the same time.
+
+Successful test run:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-9.1.1, pluggy-1.6.0
+rootdir: /workspaces/ai110-module2show-pawpal-starter
+plugins: anyio-4.14.0
+collected 6 items
+
+tests/test_pawpal.py ......                                              [100%]
+
+============================== 6 passed in 0.01s ===============================
 ```
+
+**Confidence Level: ★★★★☆ (4/5)**
+
+All six tests pass and cover every core behavior (sorting, filtering, recurrence, and
+conflict detection) along both happy paths and key edge cases. I held back one star
+because a few edge cases are not yet tested — an owner or pet with no tasks, tasks with
+no time (`time=None`), and non-zero-padded times like `"9:00"` (which would sort
+incorrectly). The logic that *is* tested is reliable; the remaining risk is in untested
+inputs.
 
 ## 📐 Smarter Scheduling
 
